@@ -1,0 +1,112 @@
+.movie-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.25s ease;
+}
+
+.movie-card:hover { transform: translateY(-4px); }
+
+.movie-card__poster-wrap {
+  position: relative;
+  aspect-ratio: 2/3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  margin-bottom: 0.75rem;
+}
+
+.movie-card__poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.movie-card:hover .movie-card__poster { transform: scale(1.04); }
+
+.movie-card__poster-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  background: linear-gradient(135deg, var(--bg-elevated), var(--bg-card));
+}
+
+.movie-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.movie-card:hover .movie-card__overlay { opacity: 1; }
+
+.movie-card__play {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0a0a0f;
+  font-size: 1rem;
+  padding-left: 3px;
+}
+
+.movie-card__badge-wrap {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+}
+
+.movie-card__info { padding: 0 0.25rem; }
+
+.movie-card__title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movie-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.movie-card__genre {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.movie-card__duration {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.movie-card__duration::before {
+  content: '·';
+  margin-right: 0.5rem;
+}
+
+.movie-card__rating {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+}
