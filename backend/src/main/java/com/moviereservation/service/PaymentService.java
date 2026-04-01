@@ -1,5 +1,6 @@
 package com.moviereservation.service;
 
+import com.google.gson.JsonObject;
 import com.moviereservation.entity.Reservation;
 import com.moviereservation.repository.ReservationRepository;
 import com.stripe.Stripe;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -88,27 +90,50 @@ public class PaymentService {
             throw new RuntimeException("Invalid Stripe webhook signature");
         }
 
-        switch (event.getType()) {
-            case "payment_intent.succeeded" -> {
-                PaymentIntent pi = (PaymentIntent) event.getDataObjectDeserializer()
-                        .getObject().orElseThrow();
-                confirmReservation(pi.getId());
-            }
-            case "payment_intent.payment_failed" -> {
-                PaymentIntent pi = (PaymentIntent) event.getDataObjectDeserializer()
-                        .getObject().orElseThrow();
-                cancelReservationPayment(pi.getId());
-            }
+        System.out.println("=== WEBHOOK RECEIVED ===");
+        System.out.println("Event type: " + event.getType());
+
+        // Only process payment_intent.succeeded events
+        if ("payment_intent.succeeded".equals(event.getType())) {
+            // Parse the raw JSON payload to extract the payment intent ID
+            JsonObject eventJson = new com.google.gson.JsonParser().parse(payload).getAsJsonObject();
+            JsonObject data = eventJson.getAsJsonObject("data");
+            JsonObject object = data.getAsJsonObject("object");
+            String paymentIntentId = object.get("id").getAsString();
+
+            System.out.println("Processing payment success for: " + paymentIntentId);
+            confirmReservation(paymentIntentId);
+        } else if ("payment_intent.payment_failed".equals(event.getType())) {
+            JsonObject eventJson = new com.google.gson.JsonParser().parse(payload).getAsJsonObject();
+            JsonObject data = eventJson.getAsJsonObject("data");
+            JsonObject object = data.getAsJsonObject("object");
+            String paymentIntentId = object.get("id").getAsString();
+
+            System.out.println("Processing payment failure for: " + paymentIntentId);
+            cancelReservationPayment(paymentIntentId);
         }
     }
 
     private void confirmReservation(String paymentIntentId) {
-        reservationRepository.findByStripePaymentIntentId(paymentIntentId)
-                .ifPresent(reservation -> {
-                    reservation.setStatus(Reservation.ReservationStatus.CONFIRMED);
-                    reservation.setPaidAt(LocalDateTime.now());
-                    reservationRepository.save(reservation);
-                });
+        System.out.println("=== CONFIRMING RESERVATION ===");
+        System.out.println("Payment Intent ID: " + paymentIntentId);
+
+        Optional<Reservation> reservationOpt = reservationRepository.findByStripePaymentIntentId(paymentIntentId);
+
+        if (reservationOpt.isEmpty()) {
+            System.out.println("ERROR: Reservation not found for payment intent: " + paymentIntentId);
+            throw new RuntimeException("Reservation not found for payment intent: " + paymentIntentId);
+        }
+
+        Reservation reservation = reservationOpt.get();
+        System.out.println("Found reservation ID: " + reservation.getId());
+        System.out.println("Current status: " + reservation.getStatus());
+
+        reservation.setStatus(Reservation.ReservationStatus.CONFIRMED);
+        reservation.setPaidAt(LocalDateTime.now());
+        reservationRepository.save(reservation);
+
+        System.out.println("Reservation updated to CONFIRMED");
     }
 
     private void cancelReservationPayment(String paymentIntentId) {

@@ -36,6 +36,9 @@ public class PaymentController {
             paymentService.handleWebhook(payload, sigHeader);
             return ResponseEntity.ok("Webhook received");
         } catch (Exception e) {
+            System.out.println("=== WEBHOOK ERROR ===");
+            System.out.println("Error message: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
