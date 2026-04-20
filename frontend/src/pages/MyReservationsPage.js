@@ -60,7 +60,7 @@ export default function MyReservationsPage() {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {reservations.map(r => (
+          {reservations.filter(r => r.status !== 'CANCELLED').map(r => (
             <div key={r.id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.5rem', display: 'grid', gridTemplateColumns: '1fr auto', gap: '1rem', alignItems: 'start' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
@@ -101,15 +101,15 @@ export default function MyReservationsPage() {
                     Complete Payment
                   </Link>
                 )}
-                {(r.status === 'PENDING') && (
-                  <button
-                    className="btn btn-ghost"
-                    style={{ fontSize: '0.8rem', color: 'var(--danger)' }}
-                    disabled={cancelling === r.id}
-                    onClick={() => handleCancel(r.id)}
-                  >
-                    {cancelling === r.id ? 'Cancelling...' : 'Cancel'}
-                  </button>
+                {(r.status !== 'CANCELLED' && r.status !== 'REFUNDED') && (
+                    <button
+                        className="btn btn-ghost"
+                        style={{ fontSize: '0.8rem', color: 'var(--danger)' }}
+                        disabled={cancelling === r.id}
+                        onClick={() => handleCancel(r.id)}
+                    >
+                      {cancelling === r.id ? 'Cancelling...' : 'Cancel'}
+                    </button>
                 )}
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                   #{r.id}

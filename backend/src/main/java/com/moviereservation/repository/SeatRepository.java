@@ -16,7 +16,7 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
             SELECT rs.id FROM Reservation r
             JOIN r.seats rs
             WHERE r.showtime.id = :showtimeId
-            AND r.status IN ('PENDING', 'CONFIRMED')
+            AND r.status IN ('HELD', 'PENDING', 'CONFIRMED')
         )
     """)
     List<Seat> findAvailableSeatsForShowtime(
