@@ -39,7 +39,7 @@ public class Reservation {
     private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)
-    private ReservationStatus status = ReservationStatus.PENDING;
+    private ReservationStatus status = ReservationStatus.HELD;
 
     private String stripePaymentIntentId;
     private String stripeClientSecret;
@@ -49,7 +49,19 @@ public class Reservation {
 
     private LocalDateTime paidAt;
 
+    private LocalDateTime heldUntil;
+    private static final int HOLD_DURATION_MINUTES = 15;
+
+    public void initializeHold() {
+        this.heldUntil = LocalDateTime.now(java.time.ZoneOffset.UTC).plusMinutes(HOLD_DURATION_MINUTES);
+        this.status = ReservationStatus.HELD;
+    }
+
+    public boolean isHoldExpired() {
+        return heldUntil != null && LocalDateTime.now().isAfter(heldUntil);
+    }
+
     public enum ReservationStatus {
-        PENDING, CONFIRMED, CANCELLED, REFUNDED
+        HELD, PENDING, CONFIRMED, CANCELLED, REFUNDED
     }
 }

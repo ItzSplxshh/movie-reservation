@@ -62,8 +62,10 @@ public class ReservationService {
                 .showtime(showtime)
                 .seats(requestedSeats)
                 .totalPrice(total)
-                .status(Reservation.ReservationStatus.PENDING)
                 .build();
+
+        // Start the 15 minute hold timer
+        reservation.initializeHold();
 
         return reservationRepository.save(reservation);
     }
@@ -86,8 +88,8 @@ public class ReservationService {
     @Transactional
     public Reservation cancelReservation(Long id, String userEmail) {
         Reservation reservation = getReservationById(id, userEmail);
-        if (reservation.getStatus() == Reservation.ReservationStatus.CONFIRMED) {
-            throw new RuntimeException("Cannot cancel a confirmed reservation. Please request a refund.");
+        if (reservation.getStatus() == Reservation.ReservationStatus.CANCELLED) {
+            throw new RuntimeException("Reservation is already cancelled.");
         }
         reservation.setStatus(Reservation.ReservationStatus.CANCELLED);
         return reservationRepository.save(reservation);
