@@ -45,8 +45,9 @@ public class PaymentService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new RuntimeException("Reservation not found"));
 
-        if (reservation.getStatus() != Reservation.ReservationStatus.PENDING) {
-            throw new RuntimeException("Reservation is not in PENDING state");
+        if (reservation.getStatus() != Reservation.ReservationStatus.HELD
+                && reservation.getStatus() != Reservation.ReservationStatus.PENDING) {
+            throw new RuntimeException("Reservation is not in a payable state");
         }
 
         long amountInCents = reservation.getTotalPrice()
@@ -131,6 +132,7 @@ public class PaymentService {
 
         reservation.setStatus(Reservation.ReservationStatus.CONFIRMED);
         reservation.setPaidAt(LocalDateTime.now());
+        reservation.setHeldUntil(null); // clear the hold timer
         reservationRepository.save(reservation);
 
         System.out.println("Reservation updated to CONFIRMED");
