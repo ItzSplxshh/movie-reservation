@@ -42,24 +42,29 @@ export default function LoginPage() {
           <div className="form-group">
             <label>Email</label>
             <input
-              type="email"
-              name="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={handleChange}
-              required
+                type="email"
+                name="email"
+                placeholder="you@example.com"
+                value={form.email}
+                onChange={handleChange}
+                required
             />
           </div>
           <div className="form-group">
             <label>Password</label>
             <input
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              value={form.password}
-              onChange={handleChange}
-              required
+                type="password"
+                name="password"
+                placeholder="••••••••"
+                value={form.password}
+                onChange={handleChange}
+                required
             />
+            <div style={{textAlign: 'right', marginTop: '0.4rem'}}>
+              <Link to="/forgot-password" style={{fontSize: '0.82rem', color: 'var(--accent)'}}>
+                Forgot password?
+              </Link>
+            </div>
           </div>
 
           <button type="submit" className="btn btn-primary auth-submit" disabled={loading}>

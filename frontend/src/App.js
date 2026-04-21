@@ -11,6 +11,8 @@ import MyReservationsPage from './pages/MyReservationsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AdminPage from './pages/AdminPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -34,6 +36,8 @@ function AppRoutes() {
         <Route path="/movies/:id" element={<MovieDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/select-seats/:showtimeId" element={
           <PrivateRoute><SeatSelectionPage /></PrivateRoute>
         } />
