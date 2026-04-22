@@ -400,6 +400,106 @@ function AdminReports() {
   );
 }
 
+// ─── Users Tab ───────────────────────────────────────────────────────────────
+function AdminUsers() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchUsers = () => {
+    api.get('/admin/users')
+        .then(r => setUsers(r.data))
+        .catch(console.error)
+        .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchUsers(); }, []);
+
+  const handleRoleChange = async (id, newRole) => {
+    try {
+      await api.put(`/admin/users/${id}/role`, { role: newRole });
+      fetchUsers();
+    } catch (err) {
+      alert('Failed to update role.');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this user? This cannot be undone.')) return;
+    try {
+      await api.delete(`/admin/users/${id}`);
+      fetchUsers();
+    } catch (err) {
+      alert('Failed to delete user.');
+    }
+  };
+
+  if (loading) return <div className="loading-spinner" />;
+
+  return (
+      <div>
+        <div className="admin-tab-header">
+          <h2>Users</h2>
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{users.length} registered users</span>
+        </div>
+
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {users.map(u => (
+                <tr key={u.id}>
+                  <td style={{ color: 'var(--text-muted)' }}>#{u.id}</td>
+                  <td style={{ fontWeight: 500 }}>{u.firstName} {u.lastName}</td>
+                  <td style={{ color: 'var(--text-secondary)' }}>{u.email}</td>
+                  <td>
+                    <select
+                        value={u.role}
+                        onChange={e => handleRoleChange(u.id, e.target.value)}
+                        style={{
+                          background: 'var(--bg-elevated)',
+                          border: '1px solid var(--border)',
+                          color: u.role === 'ADMIN' ? 'var(--accent)' : 'var(--text-primary)',
+                          borderRadius: '6px',
+                          padding: '0.3rem 0.5rem',
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                    >
+                      <option value="USER">USER</option>
+                      <option value="ADMIN">ADMIN</option>
+                    </select>
+                  </td>
+                  <td style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                    {u.createdAt ? format(new Date(u.createdAt), "MMM d, yyyy") : '—'}
+                  </td>
+                  <td>
+                    <button
+                        className="btn btn-ghost"
+                        style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', color: 'var(--danger)' }}
+                        onClick={() => handleDelete(u.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+            ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+  );
+}
+
 // ─── Main Admin Layout ────────────────────────────────────────────────────────
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -408,6 +508,7 @@ export default function AdminPage() {
     { label: 'Theaters', path: '/admin/theaters' },
     { label: 'Showtimes', path: '/admin/showtimes' },
     { label: 'Reports', path: '/admin/reports' },
+    { label: 'Users', path: '/admin/users' },
   ];
 
   return (
@@ -438,6 +539,7 @@ export default function AdminPage() {
           <Route path="theaters" element={<AdminTheaters />} />
           <Route path="showtimes" element={<AdminShowtimes />} />
           <Route path="reports" element={<AdminReports />} />
+          <Route path="users" element={<AdminUsers />} />
         </Routes>
       </div>
     </div>

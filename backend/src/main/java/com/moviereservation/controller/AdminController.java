@@ -23,6 +23,26 @@ public class AdminController {
     private final TheaterService theaterService;
     private final ReservationRepository reservationRepository;
     private final SeatRepository seatRepository;
+    private final UserRepository userRepository;
+
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getUsers() {
+        return ResponseEntity.ok(userRepository.findAll());
+    }
+
+    @PutMapping("/users/{id}/role")
+    public ResponseEntity<User> updateRole(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setRole(User.Role.valueOf(body.get("role")));
+        return ResponseEntity.ok(userRepository.save(user));
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 
     @GetMapping("/theaters")
     public ResponseEntity<List<Theater>> getTheaters() {
