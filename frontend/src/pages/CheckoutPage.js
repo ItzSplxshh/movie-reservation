@@ -7,16 +7,18 @@ import api from '../api/axios';
 
 const stripePromise = loadStripe('pk_test_51T0zI0RxkMNeF2Bvp9kqwyLmmCXT0dv6fLgBkPEaICsLnX1KmKE1WeUp6JuiIFcXgtkdUF8jAYVIURoPblwPphYk005bKLboAr');
 
+const isHighContrast = document.body.classList.contains('high-contrast');
+
 const stripeAppearance = {
-  theme: 'night',
-  variables: {
-    colorPrimary: '#e8b04b',
-    colorBackground: '#1e1e2a',
-    colorText: '#f0ece4',
-    colorDanger: '#e05260',
-    fontFamily: 'DM Sans, sans-serif',
-    borderRadius: '8px',
-  },
+    theme: isHighContrast ? 'flat' : 'night',
+    variables: {
+        colorPrimary: isHighContrast ? '#0000cc' : '#e8b04b',
+        colorBackground: isHighContrast ? '#ffffff' : '#1e1e2a',
+        colorText: isHighContrast ? '#000000' : '#f0ece4',
+        colorDanger: isHighContrast ? '#cc0000' : '#e05260',
+        fontFamily: 'DM Sans, sans-serif',
+        borderRadius: '8px',
+    },
 };
 
 function CountdownTimer({ heldUntil, onExpired }) {

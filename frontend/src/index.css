@@ -218,21 +218,89 @@ input::placeholder { color: var(--text-muted); }
 
 /* High contrast mode */
 body.high-contrast {
-  --bg-primary: #000000;
-  --bg-secondary: #0a0a0a;
-  --bg-card: #111111;
-  --bg-elevated: #1a1a1a;
-  --accent: #FFD700;
-  --accent-dim: #FFC000;
-  --text-primary: #ffffff;
-  --text-secondary: #cccccc;
-  --text-muted: #999999;
-  --border: rgba(255,255,255,0.2);
-  --seat-available: #1a3a1a;
-  --seat-selected: #FFD700;
-  --seat-taken: #3a1a1a;
-  --danger: #ff4444;
-  --success: #44ff88;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f0f0f0;
+  --bg-card: #ffffff;
+  --bg-elevated: #e8e8e8;
+  --accent: #0000cc;
+  --accent-dim: #0000aa;
+  --accent-glow: rgba(0, 0, 204, 0.15);
+  --text-primary: #000000;
+  --text-secondary: #1a1a1a;
+  --text-muted: #444444;
+  --border: rgba(0,0,0,0.3);
+  --border-accent: rgba(0,0,204,0.5);
+  --seat-available: #c8e6c9;
+  --seat-selected: #0000cc;
+  --seat-taken: #ffcdd2;
+  --seat-vip: #e1bee7;
+  --danger: #cc0000;
+  --success: #007700;
+}
+
+body.high-contrast * {
+  color: #000000;
+}
+
+body.high-contrast a {
+  color: #0000cc !important;
+}
+
+body.high-contrast .btn-primary {
+  background: #0000cc !important;
+  color: #ffffff !important;
+}
+
+body.high-contrast .btn-ghost {
+  color: #000000 !important;
+}
+
+body.high-contrast input,
+body.high-contrast select,
+body.high-contrast textarea {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+}
+
+body.high-contrast .badge-green {
+  background: #006600 !important;
+  color: #ffffff !important;
+}
+
+body.high-contrast .badge-red {
+  background: #cc0000 !important;
+  color: #ffffff !important;
+}
+
+body.high-contrast .badge-gray {
+  background: #333333 !important;
+  color: #ffffff !important;
+}
+
+body.high-contrast .badge-gold {
+  background: #0000cc !important;
+  color: #ffffff !important;
+}
+
+body.high-contrast .navbar,
+body.high-contrast .navbar--scrolled {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  border-bottom: 2px solid #000000 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+
+body.high-contrast .navbar__links {
+  background: #ffffff !important;
+}
+
+body.high-contrast .navbar__burger span {
+  background: #000000 !important;
+}
+
+body.high-contrast .navbar__logo-text {
+  color: #0000cc !important;
 }
 
 /* Font size controls */
