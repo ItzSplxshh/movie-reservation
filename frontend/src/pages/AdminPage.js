@@ -273,6 +273,133 @@ function AdminShowtimes() {
   );
 }
 
+// ─── Reports Tab ─────────────────────────────────────────────────────────────
+function AdminReports() {
+  const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/admin/reports')
+        .then(r => setReport(r.data))
+        .catch(console.error)
+        .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="loading-spinner" />;
+  if (!report) return <div>Failed to load reports.</div>;
+
+  return (
+      <div>
+        <div className="admin-tab-header">
+          <h2>Reports</h2>
+        </div>
+
+        {/* Summary Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.25rem' }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>Total Revenue</p>
+            <p style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--accent)' }}>${Number(report.totalRevenue).toFixed(2)}</p>
+          </div>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.25rem' }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>Total Bookings</p>
+            <p style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>{report.totalBookings}</p>
+          </div>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.25rem' }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>Bookings Today</p>
+            <p style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>{report.bookingsToday}</p>
+          </div>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.25rem' }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem' }}>Cancellation Rate</p>
+            <p style={{ fontSize: '1.75rem', fontWeight: 700, color: report.cancellationRate > 20 ? 'var(--danger)' : 'var(--text-primary)' }}>{report.cancellationRate}%</p>
+          </div>
+        </div>
+
+        {/* Most Popular Movie */}
+        {report.mostPopularMovie && (
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.25rem', marginBottom: '2rem' }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.25rem' }}>Most Popular Movie</p>
+              <p style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--accent)' }}>🎬 {report.mostPopularMovie}</p>
+            </div>
+        )}
+
+        {/* Revenue Per Movie */}
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.5rem', marginBottom: '2rem' }}>
+          <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>Revenue Per Movie</h3>
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead><tr><th>Movie</th><th>Revenue</th></tr></thead>
+              <tbody>
+              {Object.entries(report.revenuePerMovie).map(([movie, revenue]) => (
+                  <tr key={movie}>
+                    <td style={{ fontWeight: 500 }}>{movie}</td>
+                    <td style={{ color: 'var(--accent)', fontWeight: 600 }}>${Number(revenue).toFixed(2)}</td>
+                  </tr>
+              ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Occupancy Per Showtime */}
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.5rem', marginBottom: '2rem' }}>
+          <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>Occupancy Per Showtime</h3>
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead><tr><th>Movie</th><th>Theatre</th><th>Date</th><th>Booked</th><th>Available</th><th>Occupancy</th></tr></thead>
+              <tbody>
+              {report.occupancy.map(row => (
+                  <tr key={row.showtimeId}>
+                    <td style={{ fontWeight: 500 }}>{row.movie}</td>
+                    <td>{row.theater}</td>
+                    <td>{format(new Date(row.startTime), "MMM d, HH:mm")}</td>
+                    <td>{row.bookedSeats} / {row.totalSeats}</td>
+                    <td>{row.availableSeats}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ flex: 1, background: 'var(--border)', borderRadius: 4, height: 8 }}>
+                          <div style={{
+                            width: `${row.occupancyPct}%`,
+                            height: '100%',
+                            borderRadius: 4,
+                            background: row.occupancyPct > 80 ? 'var(--danger)' : row.occupancyPct > 50 ? 'var(--accent)' : 'var(--success, #4caf50)',
+                            transition: 'width 0.3s ease'
+                          }} />
+                        </div>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 600, minWidth: 36 }}>{row.occupancyPct}%</span>
+                      </div>
+                    </td>
+                  </tr>
+              ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Recent Bookings */}
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.5rem' }}>
+          <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>Recent Bookings</h3>
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead><tr><th>#</th><th>Customer</th><th>Movie</th><th>Seats</th><th>Total</th><th>Paid At</th></tr></thead>
+              <tbody>
+              {report.recentBookings.map(b => (
+                  <tr key={b.id}>
+                    <td style={{ color: 'var(--text-muted)' }}>#{b.id}</td>
+                    <td style={{ fontWeight: 500 }}>{b.user}</td>
+                    <td>{b.movie}</td>
+                    <td>{b.seats}</td>
+                    <td style={{ color: 'var(--accent)', fontWeight: 600 }}>${Number(b.total).toFixed(2)}</td>
+                    <td style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{format(new Date(b.paidAt), "MMM d, HH:mm")}</td>
+                  </tr>
+              ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+  );
+}
+
 // ─── Main Admin Layout ────────────────────────────────────────────────────────
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -280,6 +407,7 @@ export default function AdminPage() {
     { label: 'Movies', path: '/admin' },
     { label: 'Theaters', path: '/admin/theaters' },
     { label: 'Showtimes', path: '/admin/showtimes' },
+    { label: 'Reports', path: '/admin/reports' },
   ];
 
   return (
@@ -309,6 +437,7 @@ export default function AdminPage() {
           <Route index element={<AdminMovies />} />
           <Route path="theaters" element={<AdminTheaters />} />
           <Route path="showtimes" element={<AdminShowtimes />} />
+          <Route path="reports" element={<AdminReports />} />
         </Routes>
       </div>
     </div>

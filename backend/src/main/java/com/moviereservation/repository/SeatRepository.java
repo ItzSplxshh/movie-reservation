@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface SeatRepository extends JpaRepository<Seat, Long> {
     List<Seat> findByTheaterId(Long theaterId);
+    long countByTheaterId(Long theaterId);
 
     @Query("""
         SELECT s FROM Seat s
