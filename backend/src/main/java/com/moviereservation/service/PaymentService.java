@@ -32,6 +32,8 @@ public class PaymentService {
 
     private final ReservationRepository reservationRepository;
 
+    private final BookingConfirmationService bookingConfirmationService;
+
     @PostConstruct
     public void init() {
         Stripe.apiKey = stripeApiKey;
@@ -48,6 +50,13 @@ public class PaymentService {
         if (reservation.getStatus() != Reservation.ReservationStatus.HELD
                 && reservation.getStatus() != Reservation.ReservationStatus.PENDING) {
             throw new RuntimeException("Reservation is not in a payable state");
+        }
+
+        if (reservation.getStripePaymentIntentId() != null) {
+            return Map.of(
+                    "clientSecret", reservation.getStripeClientSecret(),
+                    "paymentIntentId", reservation.getStripePaymentIntentId()
+            );
         }
 
         long amountInCents = reservation.getTotalPrice()
@@ -134,6 +143,9 @@ public class PaymentService {
         reservation.setPaidAt(LocalDateTime.now());
         reservation.setHeldUntil(null); // clear the hold timer
         reservationRepository.save(reservation);
+
+        // Send confirmation email
+        bookingConfirmationService.sendConfirmationEmail(reservation);
 
         System.out.println("Reservation updated to CONFIRMED");
     }

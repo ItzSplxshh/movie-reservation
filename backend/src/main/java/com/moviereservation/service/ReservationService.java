@@ -17,6 +17,7 @@ public class ReservationService {
     private final ShowtimeRepository showtimeRepository;
     private final SeatRepository seatRepository;
     private final UserRepository userRepository;
+    private final BookingConfirmationService bookingConfirmationService;
 
     public List<Seat> getAvailableSeats(Long showtimeId) {
         Showtime showtime = showtimeRepository.findById(showtimeId)
@@ -91,7 +92,13 @@ public class ReservationService {
         if (reservation.getStatus() == Reservation.ReservationStatus.CANCELLED) {
             throw new RuntimeException("Reservation is already cancelled.");
         }
+        boolean wasConfirmed = reservation.getStatus() == Reservation.ReservationStatus.CONFIRMED;
         reservation.setStatus(Reservation.ReservationStatus.CANCELLED);
-        return reservationRepository.save(reservation);
+        Reservation saved = reservationRepository.save(reservation);
+        //Send Cancellation email
+        if (wasConfirmed) {
+            bookingConfirmationService.sendCancellationEmail(saved);
+        }
+        return saved;
     }
 }

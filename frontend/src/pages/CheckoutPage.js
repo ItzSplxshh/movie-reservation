@@ -159,22 +159,22 @@ export default function CheckoutPage() {
 
   if (success) {
     return (
-        <div className="container" style={{ paddingTop: '8rem', textAlign: 'center', maxWidth: 500 }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>🎉</div>
-          <h1 style={{ marginBottom: '1rem' }}>Booking Confirmed!</h1>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-            Your tickets have been booked successfully. You'll receive a confirmation shortly.
-          </p>
-          <button className="btn btn-primary" onClick={() => navigate('/my-reservations')}>
-            View My Tickets
-          </button>
+        <div className="container" style={{paddingTop: '8rem', textAlign: 'center', maxWidth: 500}}>
+            <div style={{fontSize: '4rem', marginBottom: '1.5rem'}}>🎉</div>
+            <h1 style={{marginBottom: '1rem'}}>Booking Confirmed!</h1>
+            <p style={{color: 'var(--text-secondary)', marginBottom: '2rem'}}>
+                Your tickets have been booked successfully. You'll receive a confirmation shortly.
+            </p>
+            <button className="btn btn-primary" onClick={() => window.location.href = '/my-reservations'}>
+                View My Tickets
+            </button>
         </div>
     );
   }
 
-  if (expired) {
-    return (
-        <div className="container" style={{ paddingTop: '8rem', textAlign: 'center', maxWidth: 500 }}>
+    if (expired) {
+        return (
+            <div className="container" style={{paddingTop: '8rem', textAlign: 'center', maxWidth: 500 }}>
           <div style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>⏰</div>
           <h1 style={{ marginBottom: '1rem' }}>Your Hold Has Expired</h1>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
