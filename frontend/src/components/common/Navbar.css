@@ -117,3 +117,19 @@
   .navbar__auth { flex-direction: column; width: 100%; }
   .navbar__auth .btn { width: 100%; }
 }
+
+.navbar__a11y {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--border);
+}
+
+.navbar__a11y-btn {
+  padding: 0.35rem 0.6rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  min-width: 32px;
+}

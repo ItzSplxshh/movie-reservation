@@ -28,40 +28,43 @@ function AdminRoute({ children }) {
 
 function AppRoutes() {
   return (
-    <>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/movies" element={<MoviesPage />} />
-        <Route path="/movies/:id" element={<MovieDetailPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/select-seats/:showtimeId" element={
-          <PrivateRoute><SeatSelectionPage /></PrivateRoute>
-        } />
-        <Route path="/checkout/:reservationId" element={
-          <PrivateRoute><CheckoutPage /></PrivateRoute>
-        } />
-        <Route path="/my-reservations" element={
-          <PrivateRoute><MyReservationsPage /></PrivateRoute>
-        } />
-        <Route path="/admin/*" element={
-          <AdminRoute><AdminPage /></AdminRoute>
-        } />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </>
+      <>
+        <Navbar />
+        <main id="main-content" tabIndex="-1">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/movies" element={<MoviesPage />} />
+            <Route path="/movies/:id" element={<MovieDetailPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/select-seats/:showtimeId" element={
+              <PrivateRoute><SeatSelectionPage /></PrivateRoute>
+            } />
+            <Route path="/checkout/:reservationId" element={
+              <PrivateRoute><CheckoutPage /></PrivateRoute>
+            } />
+            <Route path="/my-reservations" element={
+              <PrivateRoute><MyReservationsPage /></PrivateRoute>
+            } />
+            <Route path="/admin/*" element={
+              <AdminRoute><AdminPage /></AdminRoute>
+            } />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
+      </>
   );
 }
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
-    </BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
+          <a href="#main-content" className="skip-link">Skip to main content</a>
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
   );
 }
