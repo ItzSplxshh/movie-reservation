@@ -98,9 +98,15 @@ export default function Navbar() {
                         </NavLink>
                     )}
                     <div className="navbar__user">
-                  <span className="navbar__user-name" aria-label={`Logged in as ${user.fullName?.split(' ')[0]}`}>
-                    {user.fullName?.split(' ')[0]}
-                  </span>
+                      <Link
+                          to="/account"
+                          className="navbar__link"
+                          style={{ textDecoration: 'none' }}
+                          aria-label={`Account settings for ${user.fullName?.split(' ')[0]}`}
+                          onClick={() => setMenuOpen(false)}
+                      >
+                        {user.fullName?.split(' ')[0]}
+                      </Link>
                       <button
                           className="btn btn-ghost"
                           onClick={handleLogout}
