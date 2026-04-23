@@ -256,6 +256,28 @@ The admin reports feature required complex Java stream operations to aggregate d
 
 ---
 
+## Week 17 — 23 April 2026 (Final touches)
+
+**Activities:**
+- Added Super Admin role with protected account that cannot be edited or deleted by other admins
+- Added DataInitializer to automatically create Super Admin account on startup
+- Added unique booking reference code generated on payment confirmation (e.g. CV-2026-A3X9K)
+- Added booking reference to confirmation email and My Tickets page
+- Implemented Redis caching for seat availability with automatic cache eviction on booking and cancellation
+- Fixed seat map showing booked seats disappearing instead of greying out
+- Added full snack pre-order system with admin management, size options and snack selection popup
+- Included snack costs in Stripe payment total and booking confirmation email
+- Added Docker containerisation with multi-stage Dockerfiles and docker-compose
+- Added account settings page allowing users to update their name and change their password
+- Sent confirmation email when password is changed
+- Updated README with full database schema, API endpoints, user flow and admin flow
+- Merged main-edit branch into main
+
+**Reflection:**
+This was the most productive single day of the project. Starting at 7am and finishing at noon, all remaining planned features were implemented along with several additional features identified during development. The snack pre-order system was the most substantial addition, touching every layer of the application from the database entity through to the confirmation email. Redis caching required moving the cache annotation from the controller to the service layer to avoid Spring Security proxy conflicts — an important lesson about how Spring AOP works. Docker containerisation demonstrated that the application is production-ready and deployable in any environment. The DataInitializer ensures a Super Admin account always exists on a fresh database, which is particularly important for the Docker deployment where the database starts empty.
+
+---
+
 ## Summary of Key Technical Decisions
 
 | Decision | Chosen | Alternative Considered | Reason |
