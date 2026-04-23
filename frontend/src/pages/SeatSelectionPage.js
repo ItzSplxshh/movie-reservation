@@ -19,18 +19,15 @@ export default function SeatSelectionPage() {
   useEffect(() => {
     Promise.all([
       api.get(`/showtimes/${showtimeId}`),
-      api.get(`/reservations/seats/${showtimeId}`),
-    ]).then(([stRes, seatsRes]) => {
+      api.get(`/seats/showtime/${showtimeId}/all`),     // All seats for the theater (for seat map display)
+      api.get(`/reservations/seats/${showtimeId}`),      // Available seats only (to determine which are taken)
+    ]).then(([stRes, allRes, availableRes]) => {
       setShowtime(stRes.data);
-      const available = seatsRes.data;
-      setAvailableSeats(available);
-      // All seats = available + taken (fetch all seats for theater)
-      return api.get(`/seats/showtime/${showtimeId}/all`).catch(() => ({ data: available }));
-    }).then(allRes => {
-      setAllSeats(allRes.data);
+      setAllSeats(allRes.data);                          // All seats shown on map (available + taken)
+      setAvailableSeats(availableRes.data);              // Available seats used to grey out taken seats
     }).catch(err => {
-      // Fallback: show only available seats
-      setAllSeats(availableSeats);
+      // Fallback: show only available seats if all seats fetch fails
+      console.error(err);
     }).finally(() => setLoading(false));
   }, [showtimeId]);
 

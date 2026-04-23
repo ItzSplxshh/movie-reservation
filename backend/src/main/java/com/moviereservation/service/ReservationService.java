@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ public class ReservationService {
     private final SeatRepository seatRepository;
     private final UserRepository userRepository;
     private final BookingConfirmationService bookingConfirmationService;
+    private final SeatService seatService;
 
     public List<Seat> getAvailableSeats(Long showtimeId) {
         Showtime showtime = showtimeRepository.findById(showtimeId)
@@ -68,6 +70,8 @@ public class ReservationService {
         // Start the 15 minute hold timer
         reservation.initializeHold();
 
+        seatService.evictSeatCache();
+
         return reservationRepository.save(reservation);
     }
 
@@ -99,6 +103,8 @@ public class ReservationService {
         if (wasConfirmed) {
             bookingConfirmationService.sendCancellationEmail(saved);
         }
+        seatService.evictSeatCache();
+
         return saved;
     }
 }
