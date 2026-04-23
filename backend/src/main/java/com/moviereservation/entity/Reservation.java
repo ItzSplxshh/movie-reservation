@@ -6,6 +6,8 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Table(name = "reservations")
@@ -34,6 +36,12 @@ public class Reservation {
     )
     @JsonIgnoreProperties({"hibernateLazyInitializer"})
     private List<Seat> seats;
+
+    @ElementCollection
+    @CollectionTable(name = "reservation_snacks", joinColumns = @JoinColumn(name = "reservation_id"))
+    @MapKeyColumn(name = "snack_id")
+    @Column(name = "quantity")
+    private Map<Long, Integer> snacks = new HashMap<>();
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalPrice;

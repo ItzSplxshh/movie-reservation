@@ -72,6 +72,7 @@ export default function MyReservationsPage() {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(null);
+  const [snackDetails, setSnackDetails] = useState([]);
 
   const fetchReservations = () => {
     api.get('/reservations/my')
@@ -81,6 +82,10 @@ export default function MyReservationsPage() {
   };
 
   useEffect(() => { fetchReservations(); }, []);
+
+  useEffect(() => {
+    api.get('/snacks').then(res => setSnackDetails(res.data)).catch(console.error);
+  }, []);
 
   const handleCancel = async (id) => {
     if (!window.confirm('Cancel this reservation?')) return;
@@ -154,6 +159,20 @@ export default function MyReservationsPage() {
                           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>
                             💺 {r.seats.map(s => `${s.rowLabel}${s.seatNumber}`).join(', ')}
                           </p>
+                      )}
+
+                      {r.snacks && Object.keys(r.snacks).length > 0 && (
+                          <div style={{ marginTop: '0.3rem' }}>
+                            {Object.entries(r.snacks).map(([snackId, qty]) => {
+                              const snack = snackDetails.find(s => s.id === parseInt(snackId));
+                              if (!snack) return null;
+                              return (
+                                  <p key={snackId} style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.2rem' }}>
+                                    {snack.emoji} {snack.name} x{qty} — <span style={{ color: 'var(--accent)', fontWeight: 600 }}>${(parseFloat(snack.price) * qty).toFixed(2)}</span>
+                                  </p>
+                              );
+                            })}
+                          </div>
                       )}
 
                       <p style={{ fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 600, marginTop: '0.5rem' }}>

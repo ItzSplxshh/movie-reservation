@@ -16,46 +16,71 @@ export default function SeatSelectionPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  // Snack state
+  const [snacks, setSnacks] = useState([]);
+  const [showSnackModal, setShowSnackModal] = useState(false);
+  const [selectedSnacks, setSelectedSnacks] = useState({});
+
   useEffect(() => {
     Promise.all([
       api.get(`/showtimes/${showtimeId}`),
       api.get(`/seats/showtime/${showtimeId}/all`),     // All seats for the theater (for seat map display)
       api.get(`/reservations/seats/${showtimeId}`),      // Available seats only (to determine which are taken)
-    ]).then(([stRes, allRes, availableRes]) => {
+      api.get(`/snacks`),                                // Available snacks for pre-order
+    ]).then(([stRes, allRes, availableRes, snacksRes]) => {
       setShowtime(stRes.data);
       setAllSeats(allRes.data);                          // All seats shown on map (available + taken)
       setAvailableSeats(availableRes.data);              // Available seats used to grey out taken seats
+      setSnacks(snacksRes.data);
     }).catch(err => {
       // Fallback: show only available seats if all seats fetch fails
       console.error(err);
     }).finally(() => setLoading(false));
   }, [showtimeId]);
 
-  // Re-derive all seats from showtime theater if needed
-  useEffect(() => {
-    if (showtime && availableSeats.length > 0 && allSeats.length === 0) {
-      setAllSeats(availableSeats);
-    }
-  }, [showtime, availableSeats, allSeats]);
-
   const toggleSeat = (seatId) => {
     setSelectedIds(prev =>
-      prev.includes(seatId) ? prev.filter(id => id !== seatId) : [...prev, seatId]
+        prev.includes(seatId) ? prev.filter(id => id !== seatId) : [...prev, seatId]
     );
   };
 
-  const handleProceed = async () => {
+  const handleSnackQuantity = (snackId, delta) => {
+    setSelectedSnacks(prev => {
+      const current = prev[snackId] || 0;
+      const next = Math.max(0, current + delta);
+      if (next === 0) {
+        const updated = { ...prev };
+        delete updated[snackId];
+        return updated;
+      }
+      return { ...prev, [snackId]: next };
+    });
+  };
+
+  const snackTotal = snacks.reduce((sum, snack) => {
+    const qty = selectedSnacks[snack.id] || 0;
+    return sum + (parseFloat(snack.price) * qty);
+  }, 0);
+
+  const handleProceed = () => {
     if (selectedIds.length === 0) return;
+    // Show snack modal before proceeding to checkout
+    setShowSnackModal(true);
+  };
+
+  const handleConfirmAndCheckout = async () => {
     setSubmitting(true);
     setError('');
     try {
       const { data: reservation } = await api.post('/reservations', {
         showtimeId: parseInt(showtimeId),
         seatIds: selectedIds,
+        snacks: selectedSnacks,
       });
       navigate(`/checkout/${reservation.id}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create reservation. Seats may have been taken.');
+      setShowSnackModal(false);
     } finally {
       setSubmitting(false);
     }
@@ -68,93 +93,218 @@ export default function SeatSelectionPage() {
   const getSeatPrice = (seat) => seat?.type === 'VIP'
       ? showtime.ticketPrice + VIP_SURCHARGE
       : showtime.ticketPrice;
-  const totalPrice = selectedIds.reduce((sum, id) => {
+  const seatTotal = selectedIds.reduce((sum, id) => {
     const seat = [...allSeats, ...availableSeats].find(s => s.id === id);
     return sum + getSeatPrice(seat);
   }, 0);
+  const totalPrice = seatTotal + snackTotal;
   const availableIds = availableSeats.map(s => s.id);
 
   return (
-    <div className="container" style={{ paddingTop: '6rem', paddingBottom: '4rem' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '2rem' }}>
-        <button className="btn btn-ghost" onClick={() => navigate(-1)} style={{ marginBottom: '1rem' }}>
-          ← Back
-        </button>
-        <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>
-          {showtime.movie?.title}
-        </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-          {format(new Date(showtime.startTime), "EEEE, MMMM d 'at' HH:mm")} · {showtime.theater?.name}
-        </p>
-      </div>
-
-      {error && <div className="alert alert-error">{error}</div>}
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', alignItems: 'start' }}>
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '2rem' }}>
-          <SeatMap
-            allSeats={allSeats.length > 0 ? allSeats : availableSeats}
-            availableSeatIds={availableIds}
-            selectedIds={selectedIds}
-            onToggle={toggleSeat}
-          />
+      <div className="container" style={{ paddingTop: '6rem', paddingBottom: '4rem' }}>
+        {/* Header */}
+        <div style={{ marginBottom: '2rem' }}>
+          <button className="btn btn-ghost" onClick={() => navigate(-1)} style={{ marginBottom: '1rem' }}>
+            ← Back
+          </button>
+          <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>
+            {showtime.movie?.title}
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+            {format(new Date(showtime.startTime), "EEEE, MMMM d 'at' HH:mm")} · {showtime.theater?.name}
+          </p>
         </div>
 
-        {/* Summary */}
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.5rem', position: 'sticky', top: '6rem' }}>
-          <h3 style={{ fontFamily: 'DM Sans', fontWeight: 600, marginBottom: '1.25rem' }}>Order Summary</h3>
+        {error && <div className="alert alert-error">{error}</div>}
 
-          {selectedIds.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-              Select your seats from the map.
-            </p>
-          ) : (
-            <div style={{ marginBottom: '1.5rem' }}>
-              {selectedIds.map(id => {
-                const seat = [...allSeats, ...availableSeats].find(s => s.id === id);
-                return seat ? (
-                    <div key={id} style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      padding: '0.5rem 0',
-                      borderBottom: '1px solid var(--border)',
-                      fontSize: '0.875rem'
-                    }}>
-                    <span style={{color: 'var(--text-secondary)'}}>
-                      Seat {seat.rowLabel}{seat.seatNumber}
-                      {seat.type === 'VIP' && <span className="badge badge-gray"
-                                                    style={{marginLeft: '0.5rem', fontSize: '0.65rem'}}>VIP</span>}
-                    </span>
-                      <span style={{color: 'var(--accent)', fontWeight: 600}}>
-  ${getSeatPrice(seat).toFixed(2)}
-                        {seat?.type === 'VIP' &&
-                            <span style={{fontSize: '0.72rem', marginLeft: '0.3rem', opacity: 0.7}}>+$3 VIP</span>}
-</span>
-                    </div>
-                ) : null;
-              })}
-            </div>
-          )}
-
-          <div
-              style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', paddingTop: '0.75rem'}}>
-            <span style={{ fontWeight: 600 }}>Total</span>
-            <span style={{ fontWeight: 700, fontSize: '1.25rem', color: 'var(--accent)' }}>
-              ${totalPrice.toFixed(2)}
-            </span>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', alignItems: 'start' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '2rem' }}>
+            <SeatMap
+                allSeats={allSeats.length > 0 ? allSeats : availableSeats}
+                availableSeatIds={availableIds}
+                selectedIds={selectedIds}
+                onToggle={toggleSeat}
+            />
           </div>
 
-          <button
-            className="btn btn-primary"
-            style={{ width: '100%' }}
-            disabled={selectedIds.length === 0 || submitting}
-            onClick={handleProceed}
-          >
-            {submitting ? 'Processing...' : `Proceed to Payment (${selectedIds.length} seat${selectedIds.length !== 1 ? 's' : ''})`}
-          </button>
+          {/* Summary */}
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1.5rem', position: 'sticky', top: '6rem' }}>
+            <h3 style={{ fontFamily: 'DM Sans', fontWeight: 600, marginBottom: '1.25rem' }}>Order Summary</h3>
+
+            {selectedIds.length === 0 ? (
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+                  Select your seats from the map.
+                </p>
+            ) : (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  {selectedIds.map(id => {
+                    const seat = [...allSeats, ...availableSeats].find(s => s.id === id);
+                    return seat ? (
+                        <div key={id} style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          padding: '0.5rem 0',
+                          borderBottom: '1px solid var(--border)',
+                          fontSize: '0.875rem'
+                        }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>
+                      Seat {seat.rowLabel}{seat.seatNumber}
+                      {seat.type === 'VIP' && <span className="badge badge-gray" style={{ marginLeft: '0.5rem', fontSize: '0.65rem' }}>VIP</span>}
+                    </span>
+                          <span style={{ color: 'var(--accent)', fontWeight: 600 }}>
+                      ${getSeatPrice(seat).toFixed(2)}
+                            {seat?.type === 'VIP' && <span style={{ fontSize: '0.72rem', marginLeft: '0.3rem', opacity: 0.7 }}>+$3 VIP</span>}
+                    </span>
+                        </div>
+                    ) : null;
+                  })}
+
+                  {/* Show selected snacks in summary */}
+                  {Object.keys(selectedSnacks).length > 0 && (
+                      <div style={{ marginTop: '0.5rem' }}>
+                        {snacks.filter(s => selectedSnacks[s.id]).map(snack => (
+                            <div key={snack.id} style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              padding: '0.5rem 0',
+                              borderBottom: '1px solid var(--border)',
+                              fontSize: '0.875rem'
+                            }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>
+                        {snack.emoji} {snack.name} x{selectedSnacks[snack.id]}
+                      </span>
+                              <span style={{ color: 'var(--accent)', fontWeight: 600 }}>
+                        ${(parseFloat(snack.price) * selectedSnacks[snack.id]).toFixed(2)}
+                      </span>
+                            </div>
+                        ))}
+                      </div>
+                  )}
+                </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', paddingTop: '0.75rem' }}>
+              <span style={{ fontWeight: 600 }}>Total</span>
+              <span style={{ fontWeight: 700, fontSize: '1.25rem', color: 'var(--accent)' }}>
+              ${totalPrice.toFixed(2)}
+            </span>
+            </div>
+
+            <button
+                className="btn btn-primary"
+                style={{ width: '100%' }}
+                disabled={selectedIds.length === 0 || submitting}
+                onClick={handleProceed}
+            >
+              {submitting ? 'Processing...' : `Proceed to Payment (${selectedIds.length} seat${selectedIds.length !== 1 ? 's' : ''})`}
+            </button>
+          </div>
         </div>
+
+        {/* Snack Selection Modal */}
+        {showSnackModal && (
+            <div style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 1000, padding: '1rem'
+            }} onClick={() => setShowSnackModal(false)}>
+              <div style={{
+                background: 'var(--bg-card)', borderRadius: 'var(--radius)',
+                padding: '2rem', maxWidth: 480, width: '100%',
+                border: '1px solid var(--border)', maxHeight: '80vh', overflowY: 'auto'
+              }} onClick={e => e.stopPropagation()}>
+                <h2 style={{ marginBottom: '0.5rem', fontSize: '1.5rem' }}>🍿 Add Snacks</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                  Pre-order snacks to skip the queue at the cinema!
+                </p>
+
+                {snacks.length === 0 ? (
+                    <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
+                      No snacks available at this time.
+                    </p>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+                      {snacks.map(snack => (
+                          <div key={snack.id} style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            padding: '1rem', background: 'var(--bg-elevated)',
+                            borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)'
+                          }}>
+                            <div>
+                              <p style={{fontWeight: 600, marginBottom: '0.2rem'}}>
+                                {snack.emoji} {snack.name}
+                                {snack.size && (
+                                    <span className="badge badge-gray"
+                                          style={{marginLeft: '0.5rem', fontSize: '0.7rem'}}>
+                                           {snack.size}
+                                    </span>
+                                  )}
+                                </p>
+                              {snack.description && (
+                                  <p style={{
+                                    fontSize: '0.8rem',
+                                    color: 'var(--text-secondary)',
+                                    marginBottom: '0.2rem'
+                                  }}>
+                                    {snack.description}
+                                  </p>
+                              )}
+                              <p style={{ fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 600 }}>
+                                ${parseFloat(snack.price).toFixed(2)}
+                              </p>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <button
+                                  className="btn btn-ghost"
+                                  style={{ padding: '0.25rem 0.6rem', fontSize: '1.1rem', lineHeight: 1 }}
+                                  onClick={() => handleSnackQuantity(snack.id, -1)}
+                              >−</button>
+                              <span style={{ fontWeight: 700, minWidth: '1.5rem', textAlign: 'center' }}>
+                        {selectedSnacks[snack.id] || 0}
+                      </span>
+                              <button
+                                  className="btn btn-ghost"
+                                  style={{ padding: '0.25rem 0.6rem', fontSize: '1.1rem', lineHeight: 1 }}
+                                  onClick={() => handleSnackQuantity(snack.id, 1)}
+                              >+</button>
+                            </div>
+                          </div>
+                      ))}
+                    </div>
+                )}
+
+                {snackTotal > 0 && (
+                    <div style={{
+                      display: 'flex', justifyContent: 'space-between',
+                      padding: '0.75rem 0', borderTop: '1px solid var(--border)',
+                      marginBottom: '1rem', fontWeight: 600
+                    }}>
+                      <span>Snacks Total</span>
+                      <span style={{ color: 'var(--accent)' }}>${snackTotal.toFixed(2)}</span>
+                    </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button
+                      className="btn btn-ghost"
+                      style={{ flex: 1 }}
+                      onClick={handleConfirmAndCheckout}
+                      disabled={submitting}
+                  >
+                    Skip Snacks
+                  </button>
+                  <button
+                      className="btn btn-primary"
+                      style={{ flex: 1 }}
+                      onClick={handleConfirmAndCheckout}
+                      disabled={submitting}
+                  >
+                    {submitting ? 'Processing...' : `Confirm — $${(seatTotal + snackTotal).toFixed(2)}`}
+                  </button>
+                </div>
+              </div>
+            </div>
+        )}
       </div>
-    </div>
   );
 }

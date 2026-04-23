@@ -1,17 +1,20 @@
 package com.moviereservation.service;
 
 import com.moviereservation.entity.Reservation;
+import com.moviereservation.repository.SnackRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class BookingConfirmationService {
 
     private final JavaMailSender mailSender;
+    private final SnackRepository snackRepository;
 
     public void sendConfirmationEmail(Reservation reservation) {
         try {
@@ -27,6 +30,22 @@ public class BookingConfirmationService {
                     .orElse("N/A");
             String total = "$" + reservation.getTotalPrice().toPlainString();
 
+            // Build snacks summary if any snacks were ordered
+            String snacksSummary = "";
+            if (reservation.getSnacks() != null && !reservation.getSnacks().isEmpty()) {
+                StringBuilder sb = new StringBuilder("\n🍿 Snacks Pre-ordered:\n");
+                for (Map.Entry<Long, Integer> entry : reservation.getSnacks().entrySet()) {
+                    snackRepository.findById(entry.getKey()).ifPresent(snack -> {
+                        sb.append("   • ").append(snack.getEmoji()).append(" ")
+                                .append(snack.getName()).append(" x").append(entry.getValue())
+                                .append(" — $").append(String.format("%.2f", snack.getPrice().multiply(
+                                        java.math.BigDecimal.valueOf(entry.getValue()))))
+                                .append("\n");
+                    });
+                }
+                snacksSummary = sb.toString();
+            }
+
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(userEmail);
             message.setSubject("Booking Confirmed - " + movieTitle);
@@ -38,6 +57,7 @@ public class BookingConfirmationService {
                             "🎭 Theatre: " + theaterName + "\n" +
                             "💺 Seats: " + seats + "\n" +
                             "💰 Total: " + total + "\n\n" +
+                            snacksSummary + "\n" +
                             "🎫 Booking Reference: " + reservation.getBookingReference() + "\n\n" +
                             "Please keep this reference safe — you may need it at the cinema.\n\n" +
                             "Enjoy the film!\n\n" +

@@ -7,7 +7,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.cache.annotation.CacheEvict;
 
 @Service
@@ -20,6 +23,7 @@ public class ReservationService {
     private final UserRepository userRepository;
     private final BookingConfirmationService bookingConfirmationService;
     private final SeatService seatService;
+    private final SnackRepository snackRepository;
 
     public List<Seat> getAvailableSeats(Long showtimeId) {
         Showtime showtime = showtimeRepository.findById(showtimeId)
@@ -60,11 +64,26 @@ public class ReservationService {
                         : showtime.getTicketPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        // Calculate snack total
+        BigDecimal snackTotal = BigDecimal.ZERO;
+        Map<Long, Integer> snackMap = new HashMap<>();
+        if (req.getSnacks() != null && !req.getSnacks().isEmpty()) {
+            for (Map.Entry<Long, Integer> entry : req.getSnacks().entrySet()) {
+                Snack snack = snackRepository.findById(entry.getKey())
+                        .orElseThrow(() -> new RuntimeException("Snack not found: " + entry.getKey()));
+                snackTotal = snackTotal.add(snack.getPrice().multiply(BigDecimal.valueOf(entry.getValue())));
+                snackMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        BigDecimal finalTotal = total.add(snackTotal);
+
         Reservation reservation = Reservation.builder()
                 .user(user)
                 .showtime(showtime)
                 .seats(requestedSeats)
-                .totalPrice(total)
+                .totalPrice(finalTotal)
+                .snacks(snackMap)
                 .build();
 
         // Start the 15 minute hold timer

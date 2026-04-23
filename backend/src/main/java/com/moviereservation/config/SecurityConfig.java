@@ -44,6 +44,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/movies/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/showtimes/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/seats/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/snacks").permitAll()
                 // Stripe webhook (raw body needed)
                 .requestMatchers("/api/payments/webhook").permitAll()
                 // Admin only

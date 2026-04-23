@@ -512,6 +512,149 @@ function AdminUsers() {
   );
 }
 
+// ─── Snacks Tab ───────────────────────────────────────────────────────────────
+function AdminSnacks() {
+  const [snacks, setSnacks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editSnack, setEditSnack] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const emptyForm = { name: '', price: '', description: '', emoji: '🍿', available: true, size: 'MEDIUM' };
+  const [form, setForm] = useState(emptyForm);
+
+  const fetchSnacks = () => api.get('/snacks/all').then(r => setSnacks(r.data)).finally(() => setLoading(false));
+  useEffect(() => { fetchSnacks(); }, []);
+
+  const openCreate = () => { setForm(emptyForm); setEditSnack(null); setShowForm(true); setError(''); };
+  const openEdit = (s) => { setForm({ ...s, price: s.price.toString() }); setEditSnack(s); setShowForm(true); setError(''); };
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError('');
+    try {
+      const payload = { ...form, price: parseFloat(form.price) };
+      if (editSnack) await api.put(`/snacks/${editSnack.id}`, payload);
+      else await api.post('/snacks', payload);
+      setShowForm(false);
+      fetchSnacks();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to save snack.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this snack?')) return;
+    await api.delete(`/snacks/${id}`);
+    fetchSnacks();
+  };
+
+  const handleToggleAvailable = async (snack) => {
+    await api.put(`/snacks/${snack.id}`, { ...snack, available: !snack.available });
+    fetchSnacks();
+  };
+
+  if (loading) return <div className="loading-spinner" />;
+
+  return (
+      <div>
+        <div className="admin-tab-header">
+          <h2>Snacks</h2>
+          <button className="btn btn-primary" onClick={openCreate}>+ Add Snack</button>
+        </div>
+
+        {showForm && (
+            <div className="admin-modal-overlay" onClick={() => setShowForm(false)}>
+              <div className="admin-modal" onClick={e => e.stopPropagation()}>
+                <h3>{editSnack ? 'Edit Snack' : 'Add Snack'}</h3>
+                {error && <div className="alert alert-error">{error}</div>}
+                <form onSubmit={handleSubmit}>
+                  <div className="admin-form-grid">
+                    <div className="form-group"><label>Name *</label><input required value={form.name}
+                                                                            onChange={e => setForm({
+                                                                              ...form,
+                                                                              name: e.target.value
+                                                                            })}/></div>
+                    <div className="form-group"><label>Price ($) *</label><input type="number" step="0.01" min="0"
+                                                                                 required value={form.price}
+                                                                                 onChange={e => setForm({
+                                                                                   ...form,
+                                                                                   price: e.target.value
+                                                                                 })}/></div>
+                    <div className="form-group"><label>Emoji</label><input value={form.emoji} onChange={e => setForm({
+                      ...form,
+                      emoji: e.target.value
+                    })} placeholder="🍿"/></div>
+                    <div className="form-group">
+                      <label>Available</label>
+                      <select value={form.available}
+                              onChange={e => setForm({...form, available: e.target.value === 'true'})}>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Size</label>
+                      <select value={form.size || 'MEDIUM'} onChange={e => setForm({...form, size: e.target.value})}>
+                        <option value="SMALL">Small</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="LARGE">Large</option>
+                      </select>
+                    </div>
+                    <div className="form-group" style={{gridColumn: '1/-1'}}><label>Description</label><input
+                        value={form.description} onChange={e => setForm({...form, description: e.target.value})}
+                        placeholder="e.g. Large salted popcorn"/></div>
+                  </div>
+                  <div style={{display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1rem'}}>
+                    <button type="button" className="btn btn-ghost" onClick={() => setShowForm(false)}>Cancel</button>
+                    <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Saving...' : 'Save'}</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+        )}
+
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead><tr><th>Snack</th><th>Price</th><th>Description</th><th>Available</th><th>Actions</th></tr></thead>
+            <tbody>
+            {snacks.map(s => (
+                <tr key={s.id}>
+                  <td style={{fontWeight: 500}}>
+                    {s.emoji} {s.name}
+                    <span className="badge badge-gray" style={{marginLeft: '0.5rem', fontSize: '0.7rem'}}>
+                      {s.size || 'MEDIUM'}
+                    </span>
+                  </td>
+                  <td style={{color: 'var(--accent)', fontWeight: 600}}>${parseFloat(s.price).toFixed(2)}</td>
+                  <td style={{color: 'var(--text-secondary)'}}>{s.description || '—'}</td>
+                  <td>
+                  <span className={`badge ${s.available ? 'badge-green' : 'badge-red'}`}>
+                    {s.available ? 'Available' : 'Unavailable'}
+                  </span>
+                  </td>
+                  <td>
+                    <button className="btn btn-ghost" style={{padding: '0.35rem 0.75rem', fontSize: '0.8rem'}}
+                            onClick={() => openEdit(s)}>Edit
+                    </button>
+                    <button className="btn btn-ghost"
+                            style={{padding: '0.35rem 0.75rem', fontSize: '0.8rem', color: 'var(--danger)'}}
+                            onClick={() => handleDelete(s.id)}>Delete
+                    </button>
+                  </td>
+                </tr>
+            ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+  );
+}
+
 // ─── Main Admin Layout ────────────────────────────────────────────────────────
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -519,6 +662,7 @@ export default function AdminPage() {
     { label: 'Movies', path: '/admin' },
     { label: 'Theaters', path: '/admin/theaters' },
     { label: 'Showtimes', path: '/admin/showtimes' },
+    { label: 'Snacks', path: '/admin/snacks' },
     { label: 'Reports', path: '/admin/reports' },
     { label: 'Users', path: '/admin/users' },
   ];
@@ -552,6 +696,7 @@ export default function AdminPage() {
           <Route path="showtimes" element={<AdminShowtimes />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="users" element={<AdminUsers />} />
+          <Route path="snacks" element={<AdminSnacks />} />
         </Routes>
       </div>
     </div>

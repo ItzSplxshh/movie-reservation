@@ -132,6 +132,7 @@ export default function CheckoutPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [expired, setExpired] = useState(false);
+  const [snackDetails, setSnackDetails] = useState([]);
 
   useEffect(() => {
     Promise.all([
@@ -156,6 +157,10 @@ export default function CheckoutPage() {
     }, 3000);
     return () => clearTimeout(timeout);
   }, [expired, navigate]);
+
+    useEffect(() => {
+        api.get('/snacks').then(res => setSnackDetails(res.data)).catch(console.error);
+    }, []);
 
   if (loading) return <div className="loading-spinner" style={{ marginTop: '8rem' }} />;
 
@@ -236,82 +241,118 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          <div style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
-            padding: '1.75rem',
-            position: 'sticky',
-            top: '6rem'
-          }}>
-            <h3 style={{fontFamily: 'DM Sans', fontWeight: 600, marginBottom: '1.25rem'}}>Booking Summary</h3>
             <div style={{
-              display: 'flex',
-              gap: '1rem',
-              alignItems: 'flex-start',
-              marginBottom: '1.5rem',
-              paddingBottom: '1.5rem',
-              borderBottom: '1px solid var(--border)'
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)',
+                padding: '1.75rem',
+                position: 'sticky',
+                top: '6rem'
             }}>
-              {showtime?.movie?.posterUrl && (
-                  <img src={showtime.movie.posterUrl} alt={showtime.movie.title}
-                       style={{width: 64, borderRadius: 8, flexShrink: 0}}/>
-              )}
-              <div>
-                <p style={{fontWeight: 600, marginBottom: '0.25rem'}}>{showtime?.movie?.title}</p>
-                <p style={{fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.15rem'}}>
-                  {showtime?.startTime && format(new Date(showtime.startTime), "MMM d, HH:mm")}
-                </p>
-                <p style={{fontSize: '0.82rem', color: 'var(--text-muted)'}}>{showtime?.theater?.name}</p>
-              </div>
-            </div>
-            <div style={{marginBottom: '1.5rem'}}>
-              <p style={{
-                fontSize: '0.8rem',
-                color: 'var(--text-muted)',
-                marginBottom: '0.75rem',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                fontWeight: 600
-              }}>Seats</p>
-              {reservation?.seats?.map(seat => (
-                  <div key={seat.id} style={{
+                <h3 style={{fontFamily: 'DM Sans', fontWeight: 600, marginBottom: '1.25rem'}}>Booking Summary</h3>
+                <div style={{
+                    display: 'flex',
+                    gap: '1rem',
+                    alignItems: 'flex-start',
+                    marginBottom: '1.5rem',
+                    paddingBottom: '1.5rem',
+                    borderBottom: '1px solid var(--border)'
+                }}>
+                    {showtime?.movie?.posterUrl && (
+                        <img src={showtime.movie.posterUrl} alt={showtime.movie.title}
+                             style={{width: 64, borderRadius: 8, flexShrink: 0}}/>
+                    )}
+                    <div>
+                        <p style={{fontWeight: 600, marginBottom: '0.25rem'}}>{showtime?.movie?.title}</p>
+                        <p style={{fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.15rem'}}>
+                            {showtime?.startTime && format(new Date(showtime.startTime), "MMM d, HH:mm")}
+                        </p>
+                        <p style={{fontSize: '0.82rem', color: 'var(--text-muted)'}}>{showtime?.theater?.name}</p>
+                    </div>
+                </div>
+                <div style={{marginBottom: '1.5rem'}}>
+                    <p style={{
+                        fontSize: '0.8rem',
+                        color: 'var(--text-muted)',
+                        marginBottom: '0.75rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.08em',
+                        fontWeight: 600
+                    }}>Seats</p>
+                    {reservation?.seats?.map(seat => (
+                        <div key={seat.id} style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            fontSize: '0.875rem',
+                            padding: '0.4rem 0'
+                        }}>
+                            <span
+                                style={{color: 'var(--text-secondary)'}}>Row {seat.rowLabel}, Seat {seat.seatNumber}</span>
+                            <span style={{color: 'var(--accent)', fontWeight: 600}}>${showtime?.ticketPrice}</span>
+                        </div>
+                    ))}
+
+                    {/* Snacks section */}
+                    {reservation?.snacks && Object.keys(reservation.snacks).length > 0 && (
+                        <div style={{marginTop: '1rem'}}>
+                            <p style={{
+                                fontSize: '0.8rem',
+                                color: 'var(--text-muted)',
+                                marginBottom: '0.75rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.08em',
+                                fontWeight: 600
+                            }}>Snacks</p>
+                            {Object.entries(reservation.snacks).map(([snackId, qty]) => (
+                                <div key={snackId} style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    fontSize: '0.875rem',
+                                    padding: '0.4rem 0'
+                                }}>
+                                  <span style={{color: 'var(--text-secondary)'}}>
+                                    {(() => {
+                                        const snack = snackDetails.find(s => s.id === parseInt(snackId));
+                                        return snack ? `${snack.emoji} ${snack.name} x${qty}` : `Snack x${qty}`;
+                                    })()}
+                                  </span>
+                                  <span style={{color: 'var(--accent)', fontWeight: 600}}>
+                                   {(() => {
+                                       const snack = snackDetails.find(s => s.id === parseInt(snackId));
+                                       return snack ? `$${(parseFloat(snack.price) * qty).toFixed(2)}` : '';
+                                   })()}
+                                  </span>
+                                </div>
+                               ))}
+                             </div>
+                            )}
+                          </div>
+                <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    fontSize: '0.875rem',
-                    padding: '0.4rem 0'
-                  }}>
-                    <span style={{color: 'var(--text-secondary)'}}>Row {seat.rowLabel}, Seat {seat.seatNumber}</span>
-                    <span style={{color: 'var(--accent)', fontWeight: 600}}>${showtime?.ticketPrice}</span>
-                  </div>
-              ))}
-            </div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              paddingTop: '1rem',
-              borderTop: '1px solid var(--border)'
-            }}>
-              <span style={{fontWeight: 700, fontSize: '1rem'}}>Total</span>
-              <span style={{fontWeight: 700, fontSize: '1.4rem', color: 'var(--accent)'}}>
+                    paddingTop: '1rem',
+                    borderTop: '1px solid var(--border)'
+                }}>
+                    <span style={{fontWeight: 700, fontSize: '1rem'}}>Total</span>
+                    <span style={{fontWeight: 700, fontSize: '1.4rem', color: 'var(--accent)'}}>
               ${reservation?.totalPrice?.toFixed(2)}
             </span>
+                </div>
+                <button
+                    className="btn btn-ghost"
+                    style={{width: '100%', marginTop: '1rem', color: 'var(--danger)'}}
+                    onClick={async () => {
+                        try {
+                            await api.delete(`/reservations/${reservationId}`);
+                        } catch (err) {
+                            console.error('Failed to cancel:', err);
+                        }
+                        navigate('/movies');
+                    }}
+                >
+                    Cancel Reservation
+                </button>
             </div>
-            <button
-                className="btn btn-ghost"
-                style={{width: '100%', marginTop: '1rem', color: 'var(--danger)'}}
-                onClick={async () => {
-                  try {
-                    await api.delete(`/reservations/${reservationId}`);
-                  } catch (err) {
-                    console.error('Failed to cancel:', err);
-                  }
-                  navigate('/movies');
-                }}
-            >
-              Cancel Reservation
-            </button>
-          </div>
         </div>
       </div>
   );
