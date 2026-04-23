@@ -8,6 +8,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import com.moviereservation.entity.User;
 
 @Service
 @RequiredArgsConstructor
@@ -102,6 +103,23 @@ public class BookingConfirmationService {
             System.out.println("Cancellation email sent to: " + userEmail);
         } catch (Exception e) {
             System.out.println("Failed to send cancellation email: " + e.getMessage());
+        }
+    }
+    public void sendPasswordChangedEmail(User user) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(user.getEmail());
+            message.setSubject("Your CineVault Password Has Been Changed");
+            message.setText(
+                    "Hi " + user.getFirstName() + ",\n\n" +
+                            "Your CineVault account password was successfully changed.\n\n" +
+                            "If you did not make this change, please reset your password immediately using the 'Forgot Password' link on the login page.\n\n" +
+                            "The CineVault Team"
+            );
+            mailSender.send(message);
+            System.out.println("Password changed email sent to: " + user.getEmail());
+        } catch (Exception e) {
+            System.out.println("Failed to send password changed email: " + e.getMessage());
         }
     }
 }

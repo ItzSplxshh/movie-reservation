@@ -13,6 +13,7 @@ import RegisterPage from './pages/RegisterPage';
 import AdminPage from './pages/AdminPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import AccountSettingsPage from "./pages/AccountSettingsPage";
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -39,6 +40,7 @@ function AppRoutes() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/account" element={<PrivateRoute><AccountSettingsPage /></PrivateRoute>} />
             <Route path="/select-seats/:showtimeId" element={
               <PrivateRoute><SeatSelectionPage /></PrivateRoute>
             } />
