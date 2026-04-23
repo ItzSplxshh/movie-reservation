@@ -48,6 +48,6 @@ public class User {
     private List<Reservation> reservations;
 
     public enum Role {
-        USER, ADMIN
+        USER, ADMIN, SUPER_ADMIN
     }
 }

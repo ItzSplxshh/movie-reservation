@@ -47,7 +47,7 @@ public class SecurityConfig {
                 // Stripe webhook (raw body needed)
                 .requestMatchers("/api/payments/webhook").permitAll()
                 // Admin only
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 // Everything else requires auth
                 .anyRequest().authenticated()
             )

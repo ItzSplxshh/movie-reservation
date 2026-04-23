@@ -458,38 +458,50 @@ function AdminUsers() {
             {users.map(u => (
                 <tr key={u.id}>
                   <td style={{ color: 'var(--text-muted)' }}>#{u.id}</td>
-                  <td style={{ fontWeight: 500 }}>{u.firstName} {u.lastName}</td>
+                  <td style={{ fontWeight: 500 }}>
+                    {u.role === 'SUPER_ADMIN' && <span style={{ marginRight: '0.4rem' }}>👑</span>}
+                    {u.firstName} {u.lastName}
+                  </td>
                   <td style={{ color: 'var(--text-secondary)' }}>{u.email}</td>
                   <td>
-                    <select
-                        value={u.role}
-                        onChange={e => handleRoleChange(u.id, e.target.value)}
-                        style={{
-                          background: 'var(--bg-elevated)',
-                          border: '1px solid var(--border)',
-                          color: u.role === 'ADMIN' ? 'var(--accent)' : 'var(--text-primary)',
-                          borderRadius: '6px',
-                          padding: '0.3rem 0.5rem',
-                          fontSize: '0.8rem',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
-                    >
-                      <option value="USER">USER</option>
-                      <option value="ADMIN">ADMIN</option>
-                    </select>
+                    {u.role === 'SUPER_ADMIN' ? (
+                        <span style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600 }}>Super Admin</span>
+                    ) : (
+                        <select
+                            value={u.role}
+                            onChange={e => handleRoleChange(u.id, e.target.value)}
+                            style={{
+                              background: 'var(--bg-elevated)',
+                              border: '1px solid var(--border)',
+                              color: u.role === 'ADMIN' ? 'var(--accent)' : 'var(--text-primary)',
+                              borderRadius: '6px',
+                              padding: '0.3rem 0.5rem',
+                              fontSize: '0.8rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                        >
+                          <option value="USER">USER</option>
+                          <option value="ADMIN">ADMIN</option>
+                        </select>
+                    )}
                   </td>
                   <td style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                     {u.createdAt ? format(new Date(u.createdAt), "MMM d, yyyy") : '—'}
                   </td>
                   <td>
-                    <button
-                        className="btn btn-ghost"
-                        style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', color: 'var(--danger)' }}
-                        onClick={() => handleDelete(u.id)}
-                    >
-                      Delete
-                    </button>
+                    {u.role !== 'SUPER_ADMIN' && (
+                        <button
+                            className="btn btn-ghost"
+                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', color: 'var(--danger)' }}
+                            onClick={() => handleDelete(u.id)}
+                        >
+                          Delete
+                        </button>
+                    )}
+                    {u.role === 'SUPER_ADMIN' && (
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Protected</span>
+                    )}
                   </td>
                 </tr>
             ))}

@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
 @RequiredArgsConstructor
 public class AdminController {
 
@@ -31,15 +31,24 @@ public class AdminController {
     }
 
     @PutMapping("/users/{id}/role")
-    public ResponseEntity<User> updateRole(@PathVariable Long id, @RequestBody Map<String, String> body) {
+    public ResponseEntity<?> updateRole(@PathVariable Long id, @RequestBody Map<String, String> body) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        if (user.getRole() == User.Role.SUPER_ADMIN) {
+            return ResponseEntity.status(403).body("Cannot modify a Super Admin account.");
+        }
         user.setRole(User.Role.valueOf(body.get("role")));
         return ResponseEntity.ok(userRepository.save(user));
     }
 
+
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (user.getRole() == User.Role.SUPER_ADMIN) {
+            return ResponseEntity.status(403).body("Cannot delete a Super Admin account.");
+        }
         userRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
