@@ -142,6 +142,13 @@ public class PaymentService {
         reservation.setStatus(Reservation.ReservationStatus.CONFIRMED);
         reservation.setPaidAt(LocalDateTime.now());
         reservation.setHeldUntil(null); // clear the hold timer
+        // Generate unique booking reference
+        if (reservation.getBookingReference() == null) {
+            String ref = "CV-" + LocalDateTime.now().getYear() + "-" +
+                    java.util.UUID.randomUUID().toString().substring(0, 5).toUpperCase();
+            reservation.setBookingReference(ref);
+        }
+
         reservationRepository.save(reservation);
 
         // Send confirmation email

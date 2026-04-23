@@ -38,6 +38,8 @@ public class BookingConfirmationService {
                             "🎭 Theatre: " + theaterName + "\n" +
                             "💺 Seats: " + seats + "\n" +
                             "💰 Total: " + total + "\n\n" +
+                            "🎫 Booking Reference: " + reservation.getBookingReference() + "\n\n" +
+                            "Please keep this reference safe — you may need it at the cinema.\n\n" +
                             "Enjoy the film!\n\n" +
                             "The CineVault Team"
             );

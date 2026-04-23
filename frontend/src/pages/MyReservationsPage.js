@@ -160,6 +160,25 @@ export default function MyReservationsPage() {
                         ${r.totalPrice?.toFixed(2)}
                       </p>
 
+                      {r.status === 'CONFIRMED' && r.bookingReference && (
+                          <p style={{
+                            fontSize: '0.85rem',
+                            color: 'var(--text-secondary)',
+                            marginTop: '0.3rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.4rem'
+                          }}>
+                            🎫 <span style={{
+                            fontWeight: 700,
+                            color: 'var(--text-primary)',
+                            letterSpacing: '0.05em'
+                          }}>
+      {r.bookingReference}
+    </span>
+                          </p>
+                      )}
+
                       {r.status === 'HELD' && r.heldUntil && (
                           <HoldCountdown
                               heldUntil={r.heldUntil}

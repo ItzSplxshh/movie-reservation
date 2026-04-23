@@ -52,6 +52,9 @@ public class Reservation {
     private LocalDateTime heldUntil;
     private static final int HOLD_DURATION_MINUTES = 15;
 
+    @Column(unique = true)
+    private String bookingReference;
+
     public void initializeHold() {
         this.heldUntil = LocalDateTime.now(java.time.ZoneOffset.UTC).plusMinutes(HOLD_DURATION_MINUTES);
         this.status = ReservationStatus.HELD;
