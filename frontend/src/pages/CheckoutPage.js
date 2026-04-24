@@ -286,9 +286,20 @@ export default function CheckoutPage() {
                             fontSize: '0.875rem',
                             padding: '0.4rem 0'
                         }}>
-                            <span
-                                style={{color: 'var(--text-secondary)'}}>Row {seat.rowLabel}, Seat {seat.seatNumber}</span>
-                            <span style={{color: 'var(--accent)', fontWeight: 600}}>${showtime?.ticketPrice}</span>
+                            <span style={{color: 'var(--text-secondary)'}}>
+                                Row {seat.rowLabel}, Seat {seat.seatNumber}
+                                {seat.type === 'VIP' && (
+                                    <span className="badge badge-gray" style={{marginLeft: '0.5rem', fontSize: '0.65rem'}}>VIP</span>
+                                )}
+                            </span>
+                            <span style={{color: 'var(--accent)', fontWeight: 600}}>
+                                ${seat.type === 'VIP'
+                                ? (parseFloat(showtime?.ticketPrice) + 3).toFixed(2)
+                                : parseFloat(showtime?.ticketPrice).toFixed(2)}
+                                {seat.type === 'VIP' && (
+                                    <span style={{fontSize: '0.72rem', marginLeft: '0.3rem', opacity: 0.7}}>+$3 VIP</span>
+                                )}
+                             </span>
                         </div>
                     ))}
 
