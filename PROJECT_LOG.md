@@ -236,7 +236,7 @@ Password reset required careful security consideration — the reset token must 
 
 ---
 
-## Week 18 — 22 to 23 April 2026
+## Week 17 — 22 to 23 April 2026
 
 **Activities:**
 - Added admin reports tab with occupancy per showtime, revenue per movie, recent bookings and summary cards
@@ -275,6 +275,19 @@ The admin reports feature required complex Java stream operations to aggregate d
 
 **Reflection:**
 This was the most productive single day of the project. Starting at 7am and finishing at noon, all remaining planned features were implemented along with several additional features identified during development. The snack pre-order system was the most substantial addition, touching every layer of the application from the database entity through to the confirmation email. Redis caching required moving the cache annotation from the controller to the service layer to avoid Spring Security proxy conflicts — an important lesson about how Spring AOP works. Docker containerisation demonstrated that the application is production-ready and deployable in any environment. The DataInitializer ensures a Super Admin account always exists on a fresh database, which is particularly important for the Docker deployment where the database starts empty.
+
+---
+
+## Week 17 — 24 April 2026
+
+**Activities:**
+- Added Javadoc comments to ReservationController, JwtAuthFilter, Reservation, PaymentService, SeatService and BookingConfirmationService
+- Added JUnit unit test suite with 33 passing tests across 6 test classes
+- Added k6 load testing script — all thresholds passed under 50 concurrent users
+- Fixed VIP surcharge display in checkout booking summary
+
+**Reflection:**
+The k6 load testing produced excellent results with an average response time of 5.85ms under 50 concurrent users and a 95th percentile of 8.53ms, well within the 500ms threshold. The JUnit test suite covers the core business logic across all major service and controller classes.
 
 ---
 
