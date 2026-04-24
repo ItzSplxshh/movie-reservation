@@ -1,4 +1,4 @@
-package com.moviereservation.service;
+package com.moviereservation;
 
 import com.google.gson.JsonObject;
 import com.moviereservation.entity.Reservation;
@@ -7,10 +7,8 @@ import com.stripe.Stripe;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
-import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.PaymentIntentCreateParams;
-import com.stripe.param.checkout.SessionCreateParams;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

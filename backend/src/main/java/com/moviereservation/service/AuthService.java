@@ -1,4 +1,4 @@
-package com.moviereservation.service;
+package com.moviereservation;
 
 import com.moviereservation.dto.AuthRequest;
 import com.moviereservation.dto.AuthResponse;

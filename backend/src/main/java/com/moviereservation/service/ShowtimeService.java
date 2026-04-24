@@ -1,4 +1,4 @@
-package com.moviereservation.service;
+package com.moviereservation;
 
 import com.moviereservation.dto.ShowtimeRequest;
 import com.moviereservation.entity.*;

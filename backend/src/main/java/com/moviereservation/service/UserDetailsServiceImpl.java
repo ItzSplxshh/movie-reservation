@@ -1,4 +1,4 @@
-package com.moviereservation.service;
+package com.moviereservation;
 
 import com.moviereservation.entity.User;
 import com.moviereservation.repository.UserRepository;
