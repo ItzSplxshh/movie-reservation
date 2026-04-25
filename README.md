@@ -1,7 +1,6 @@
 # CineVault — Movie Reservation System
 
-A full-stack cinema reservation system built with Spring Boot and React for the CO3201 Computer Science Final Year Project at the University of Leicester.
-
+A full-stack cinema reservation system built with Spring Boot and React 
 ---
 
 ## Tech Stack
