@@ -81,7 +81,16 @@ export default function MyReservationsPage() {
         .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchReservations(); }, []);
+  useEffect(() => {
+    fetchReservations();
+  }, []);
+
+// Re-fetch when page becomes visible again
+  useEffect(() => {
+    const handleFocus = () => fetchReservations();
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [fetchReservations]);
 
   useEffect(() => {
     api.get('/snacks').then(res => setSnackDetails(res.data)).catch(console.error);

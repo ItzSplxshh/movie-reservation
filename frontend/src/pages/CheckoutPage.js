@@ -134,17 +134,23 @@ export default function CheckoutPage() {
   const [expired, setExpired] = useState(false);
   const [snackDetails, setSnackDetails] = useState([]);
 
-  useEffect(() => {
-    Promise.all([
-      api.get(`/reservations/${reservationId}`),
-      api.post(`/payments/create-intent/${reservationId}`),
-    ]).then(([resRes, payRes]) => {
-      setReservation(resRes.data);
-      setClientSecret(payRes.data.clientSecret);
-    }).catch(err => {
-      setError(err.response?.data?.message || 'Failed to initialize checkout.');
-    }).finally(() => setLoading(false));
-  }, [reservationId]);
+    useEffect(() => {
+        Promise.all([
+            api.get(`/reservations/${reservationId}`),
+            api.post(`/payments/create-intent/${reservationId}`),
+        ]).then(([resRes, payRes]) => {
+            setReservation(resRes.data);
+            setClientSecret(payRes.data.clientSecret);
+        }).catch(err => {
+            const message = err.response?.data?.message || 'Failed to initialize checkout.';
+            // If reservation is already confirmed redirect to My Tickets
+            if (message.includes('not in a payable state')) {
+                window.location.href = '/my-reservations';
+            } else {
+                setError(message);
+            }
+        }).finally(() => setLoading(false));
+    }, [reservationId]);
 
   const handleExpired = useCallback(() => {
     setExpired(true);
