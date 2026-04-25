@@ -123,7 +123,8 @@ public class BookingConfirmationService {
                             "🎬 Movie: " + movieTitle + "\n" +
                             "📅 Date: " + startTime + "\n" +
                             "🎭 Theatre: " + theaterName + "\n" +
-                            "💺 Seats: " + seats + "\n\n" +
+                            "💺 Seats: " + seats + "\n" +
+                            "🎫 Booking Reference: " + reservation.getBookingReference() + "\n\n" +
                             "If you cancelled by mistake, please make a new booking.\n\n" +
                             "The CineVault Team"
             );
