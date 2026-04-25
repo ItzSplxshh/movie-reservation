@@ -12,7 +12,7 @@ import java.util.List;
  * REST controller for movie management.
  * GET endpoints are publicly accessible allowing unauthenticated users
  * to browse the film catalogue. POST, PUT and DELETE endpoints are
- * restricted to ADMIN users only.
+ * restricted to ADMIN and SUPER_ADMIN roles.
  */
 @RestController
 @RequestMapping("/api/movies")
@@ -50,31 +50,31 @@ public class MovieController {
 
     /**
      * Creates a new movie in the system.
-     * Restricted to ADMIN users only.
+     * Restricted to ADMIN and SUPER_ADMIN roles.
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Movie> createMovie(@RequestBody Movie movie) {
         return ResponseEntity.ok(movieService.createMovie(movie));
     }
 
     /**
      * Updates an existing movie by ID.
-     * Restricted to ADMIN users only.
+     * Restricted to ADMIN and SUPER_ADMIN roles.
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @RequestBody Movie movie) {
         return ResponseEntity.ok(movieService.updateMovie(id, movie));
     }
 
     /**
      * Deletes a movie by ID.
-     * Restricted to ADMIN users only.
+     * Restricted to ADMIN and SUPER_ADMIN roles.
      * Returns 204 No Content on successful deletion.
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteMovie(@PathVariable Long id) {
         movieService.deleteMovie(id);
         return ResponseEntity.noContent().build();

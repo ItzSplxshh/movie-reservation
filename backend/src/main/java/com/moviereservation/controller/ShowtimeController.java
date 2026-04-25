@@ -14,7 +14,7 @@ import java.util.List;
  * REST controller for showtime management.
  * GET endpoints are publicly accessible allowing unauthenticated users
  * to browse available showtimes for each film.
- * POST and DELETE endpoints are restricted to ADMIN users only.
+ * POST and DELETE endpoints are restricted to ADMIN and SUPER_ADMIN roles.
  */
 @RestController
 @RequestMapping("/api/showtimes")
@@ -52,26 +52,26 @@ public class ShowtimeController {
     /**
      * Creates a new showtime linking a movie to a theatre.
      * The end time is automatically calculated from the movie duration.
-     * Restricted to ADMIN users only.
+     * Restricted to ADMIN and SUPER_ADMIN roles.
      *
      * @param req the showtime request containing movie ID, theatre ID, start time and ticket price
      * @return the created showtime
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Showtime> create(@Valid @RequestBody ShowtimeRequest req) {
         return ResponseEntity.ok(showtimeService.createShowtime(req));
     }
 
     /**
      * Deletes a showtime by ID.
-     * Restricted to ADMIN users only.
+     * Restricted to ADMIN and SUPER_ADMIN roles.
      * Returns 204 No Content on successful deletion.
      *
      * @param id the ID of the showtime to delete
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         showtimeService.deleteShowtime(id);
         return ResponseEntity.noContent().build();
