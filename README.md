@@ -482,11 +482,3 @@ movie-reservation/
 ```
 
 ---
-
-## Student
-
-**Name:** Iyenoma Osa
-**Student ID:** io60
-**Module:** CO3201 Computer Science Project
-**University:** University of Leicester
-**Academic Year:** 2025/2026
