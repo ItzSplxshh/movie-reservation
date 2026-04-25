@@ -42,7 +42,7 @@ function HoldCountdown({ heldUntil, reservationId, onExpired }) {
 
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
-  const isWarning = secondsLeft <= 120;
+  const isWarning = secondsLeft <= 480;
   const isCritical = secondsLeft <= 60;
 
   return (
@@ -84,13 +84,6 @@ export default function MyReservationsPage() {
   useEffect(() => {
     fetchReservations();
   }, []);
-
-// Re-fetch when page becomes visible again
-  useEffect(() => {
-    const handleFocus = () => fetchReservations();
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [fetchReservations]);
 
   useEffect(() => {
     api.get('/snacks').then(res => setSnackDetails(res.data)).catch(console.error);
