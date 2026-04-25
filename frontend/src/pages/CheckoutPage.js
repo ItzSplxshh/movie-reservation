@@ -44,7 +44,7 @@ function CountdownTimer({ heldUntil, onExpired }) {
 
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
-  const isWarning = secondsLeft <= 120;
+  const isWarning = secondsLeft <= 480;
   const isCritical = secondsLeft <= 60;
 
   return (

@@ -40,7 +40,7 @@ public class ReservationExpiryService {
         List<Reservation> expiredReservations = reservationRepository
                 .findByStatusAndHeldUntilBefore(
                         Reservation.ReservationStatus.HELD,
-                        LocalDateTime.now()
+                        LocalDateTime.now(java.time.ZoneOffset.UTC)
                 );
 
         // Cancel each expired reservation
