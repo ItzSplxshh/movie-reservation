@@ -116,6 +116,7 @@ public class ReservationService {
 
         // Start the 15-minute seat hold timer
         reservation.initializeHold();
+        System.out.println("=== HOLD SET: " + reservation.getHeldUntil() + " ===");
 
         // Evict cache so subsequent seat map requests reflect the newly held seats
         seatService.evictSeatCache();
