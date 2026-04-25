@@ -1,7 +1,4 @@
-# Project Log — Movie Reservation System
-**Module:** CO3201 Computer Science Project  
-**Student:** Iyen Osa  
-**Academic Year:** 2025/2026
+# Project Log — Movie Reservation System  
 
 ---
 
