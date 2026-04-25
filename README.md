@@ -54,10 +54,10 @@ To run locally you will need:
 
 ### 1. Clone the repository
 
-\```bash
+```bash
 git clone https://github.com/ItzSplxshh/movie-reservation.git
 cd movie-reservation
-\```
+```
 
 ### 2. Set up the database
 
