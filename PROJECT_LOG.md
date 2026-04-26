@@ -278,13 +278,20 @@ This was the most productive single day of the project. Starting at 7am and fini
 ## Week 17 — 24 April 2026
 
 **Activities:**
-- Added Javadoc comments to ReservationController, JwtAuthFilter, Reservation, PaymentService, SeatService and BookingConfirmationService
-- Added JUnit unit test suite with 33 passing tests across 6 test classes
-- Added k6 load testing script — all thresholds passed under 50 concurrent users
+- Added Javadoc comments to all Java classes including controllers, services, repositories, entities, DTOs and security classes
+- Added JUnit unit test suite with 43 passing tests across 6 test classes covering AuthService, ReservationService, UserController, SnackController, SeatService and PaymentService
+- Added boundary value analysis and equivalence partitioning tests to AuthServiceTest and UserControllerTest
+- Added k6 load testing script — all thresholds passed under 50 concurrent users with average response time of 5.85ms and 95th percentile of 8.53ms
 - Fixed VIP surcharge display in checkout booking summary
+- Fixed seat hold timezone bug in ReservationExpiryService — switched to LocalDateTime.now(ZoneOffset.UTC) for consistent expiry across environments
+- Fixed SUPER_ADMIN access to movie and showtime management endpoints
+- Fixed checkout redirect when reservation already confirmed by webhook
+- Removed focus event listener causing reservations to disappear on tab switch
+- Added booking reference to cancellation email
+- Updated yellow warning timer threshold to 8 minutes
 
 **Reflection:**
-The k6 load testing produced excellent results with an average response time of 5.85ms under 50 concurrent users and a 95th percentile of 8.53ms, well within the 500ms threshold. The JUnit test suite covers the core business logic across all major service and controller classes.
+The k6 load testing produced excellent results with an average response time of 5.85ms under 50 concurrent users and a 95th percentile of 8.53ms, well within the 500ms threshold. The JUnit test suite covers the core business logic across all major service and controller classes, employing both white box and black box testing techniques including boundary value analysis and equivalence partitioning. Several bugs were discovered and fixed during the full system test run, highlighting the importance of thorough end-to-end testing across all user roles.
 
 ---
 
@@ -337,6 +344,15 @@ The k6 load testing produced excellent results with an average response time of 
 - [x] Admin user management (view, change role, delete)
 - [x] Showtime filter by date on movie detail page
 - [x] Held ticket countdown timer on My Tickets page
+- [x] Super Admin role with protected account
+- [x] Booking reference codes (CV-YEAR-XXXXX)
+- [x] Redis caching for seat availability
+- [x] Snack pre-order system
+- [x] Docker containerisation
+- [x] Account settings page
+- [x] JUnit unit test suite (43 tests)
+- [x] k6 load testing
+- [x] White box and black box testing with boundary value analysis
 
 ---
 
