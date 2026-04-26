@@ -165,4 +165,80 @@ class UserControllerTest {
 
         verify(bookingConfirmationService).sendPasswordChangedEmail(user);
     }
+
+    // ── Boundary Value Analysis Tests ─────────────────────────────────────
+    // Testing password length boundaries for password change
+
+    @Test
+    void changePassword_withPasswordExactly6Characters_succeeds() {
+        // Boundary value — exactly at the minimum valid password length
+        when(passwordEncoder.matches("currentPass", "encodedPassword")).thenReturn(true);
+        when(passwordEncoder.encode(any())).thenReturn("newEncodedPassword");
+
+        Map<String, String> body = Map.of(
+                "currentPassword", "currentPass",
+                "newPassword", "abc123",
+                "confirmPassword", "abc123"
+        );
+
+        ResponseEntity<?> response = userController.changePassword(userDetails, body);
+
+        assertEquals(200, response.getStatusCode().value());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void changePassword_withPasswordOf5Characters_returnsBadRequest() {
+        // Boundary value — one below the minimum valid password length
+        when(passwordEncoder.matches("currentPass", "encodedPassword")).thenReturn(true);
+
+        Map<String, String> body = Map.of(
+                "currentPassword", "currentPass",
+                "newPassword", "ab123",
+                "confirmPassword", "ab123"
+        );
+
+        ResponseEntity<?> response = userController.changePassword(userDetails, body);
+
+        assertEquals(400, response.getStatusCode().value());
+        verify(userRepository, never()).save(any());
+    }
+
+    // ── Equivalence Partitioning Tests ────────────────────────────────────
+    // Testing valid and invalid input partitions for password change
+
+    @Test
+    void changePassword_withLongValidPassword_succeeds() {
+        // Equivalence partition — valid password well above minimum length
+        when(passwordEncoder.matches("currentPass", "encodedPassword")).thenReturn(true);
+        when(passwordEncoder.encode(any())).thenReturn("newEncodedPassword");
+
+        Map<String, String> body = Map.of(
+                "currentPassword", "currentPass",
+                "newPassword", "ThisIsAVeryLongAndSecurePassword123",
+                "confirmPassword", "ThisIsAVeryLongAndSecurePassword123"
+        );
+
+        ResponseEntity<?> response = userController.changePassword(userDetails, body);
+
+        assertEquals(200, response.getStatusCode().value());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void changePassword_withEmptyNewPassword_returnsBadRequest() {
+        // Equivalence partition — invalid partition, empty password
+        when(passwordEncoder.matches("currentPass", "encodedPassword")).thenReturn(true);
+
+        Map<String, String> body = Map.of(
+                "currentPassword", "currentPass",
+                "newPassword", "",
+                "confirmPassword", ""
+        );
+
+        ResponseEntity<?> response = userController.changePassword(userDetails, body);
+
+        assertEquals(400, response.getStatusCode().value());
+        verify(userRepository, never()).save(any());
+    }
 }
