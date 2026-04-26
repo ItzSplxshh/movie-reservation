@@ -471,12 +471,17 @@ movie-reservation/
 │   │   └── service/          # Business logic
 │   └── src/main/resources/
 │       └── application.properties
+│   └── src/test/java/com/moviereservation/
+│       ├── controller/       # Controller unit tests
+│       └── service/          # Service unit tests
 ├── frontend/                 # React application
 │   └── src/
 │       ├── components/       # Reusable components (Navbar, SeatMap)
 │       ├── context/          # Auth context
 │       └── pages/            # Page components
 ├── docker-compose.yml
+├── load-test.js              # k6 load testing script
+├── PROJECT_LOG.md            # Development log
 └── README.md
 ```
 
