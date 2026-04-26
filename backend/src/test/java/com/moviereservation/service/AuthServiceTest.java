@@ -94,6 +94,72 @@ class AuthServiceTest {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    // ── Boundary Value Analysis Tests ─────────────────────────────────────
+    // Testing password length boundaries for registration
+
+    @Test
+    void register_withPasswordExactly6Characters_succeeds() {
+        // Boundary value — exactly at the minimum valid password length
+        registerRequest.setPassword("abc123");
+        when(userRepository.existsByEmail(any())).thenReturn(false);
+        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userDetailsService.loadUserByUsername(any())).thenReturn(userDetails);
+        when(jwtUtil.generateToken(any())).thenReturn("mockJwtToken");
+
+        AuthResponse response = authService.register(registerRequest);
+
+        assertNotNull(response);
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void register_withPasswordLongerThan6Characters_succeeds() {
+        // Boundary value — well above minimum valid password length
+        registerRequest.setPassword("SecurePassword123");
+        when(userRepository.existsByEmail(any())).thenReturn(false);
+        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userDetailsService.loadUserByUsername(any())).thenReturn(userDetails);
+        when(jwtUtil.generateToken(any())).thenReturn("mockJwtToken");
+
+        AuthResponse response = authService.register(registerRequest);
+
+        assertNotNull(response);
+        verify(userRepository).save(any(User.class));
+    }
+
+    // ── Equivalence Partitioning Tests ────────────────────────────────────
+    // Testing valid and invalid email partitions
+
+    @Test
+    void register_newUserHasRoleUser() {
+        // Equivalence partition — all new registrations should have USER role
+        when(userRepository.existsByEmail(any())).thenReturn(false);
+        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+        when(userDetailsService.loadUserByUsername(any())).thenReturn(userDetails);
+        when(jwtUtil.generateToken(any())).thenReturn("mockJwtToken");
+
+        authService.register(registerRequest);
+
+        verify(userRepository).save(argThat(u -> u.getRole() == User.Role.USER));
+    }
+
+    @Test
+    void register_passwordIsEncoded() {
+        // Equivalence partition — passwords must always be BCrypt encoded, never plain text
+        when(userRepository.existsByEmail(any())).thenReturn(false);
+        when(passwordEncoder.encode(registerRequest.getPassword())).thenReturn("encodedPassword");
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userDetailsService.loadUserByUsername(any())).thenReturn(userDetails);
+        when(jwtUtil.generateToken(any())).thenReturn("mockJwtToken");
+
+        authService.register(registerRequest);
+
+        verify(passwordEncoder).encode("Password@123");
+    }
+
     // ── Login Tests ───────────────────────────────────────────────────────
 
     @Test
@@ -122,5 +188,18 @@ class AuthServiceTest {
         );
 
         verify(userRepository, never()).findByEmail(any());
+    }
+
+    @Test
+    void login_returnsCorrectFullName() {
+        // Equivalence partition — login should return correct user details
+        when(authManager.authenticate(any())).thenReturn(null);
+        when(userRepository.findByEmail(authRequest.getEmail())).thenReturn(Optional.of(user));
+        when(userDetailsService.loadUserByUsername(any())).thenReturn(userDetails);
+        when(jwtUtil.generateToken(any())).thenReturn("mockJwtToken");
+
+        AuthResponse response = authService.login(authRequest);
+
+        assertEquals("John Doe", response.getFullName());
     }
 }
